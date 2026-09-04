@@ -44,6 +44,7 @@ describe('salesman order management', () => {
   });
 
   it('opens notification order links in the details page', () => {
-    expect(dashboard).toContain('navigate(`/salesman/order-details/${notification.order_id}`)');
+    const bell = readFileSync(resolve(__dirname, '../components/SalesmanNotificationBell.tsx'), 'utf8');
+    expect(bell).toContain('navigate(`/salesman/order-details/${item.order_id}?source=');
   });
 });

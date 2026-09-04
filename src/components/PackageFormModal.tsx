@@ -1087,6 +1087,7 @@
 
 // src/components/PackageFormModal.tsx
 import React, { useEffect, useState } from "react";
+import CustomPackageServices, { readCustomServices } from './CustomPackageServices';
 import { X, Image, Upload, Trash2, Plus, Check } from "lucide-react";
 import axios from "axios";
 import BASE_URL from "@/Config/Api";
@@ -1139,6 +1140,8 @@ const PackageFormModal: React.FC<PackageFormModalProps> = ({
   const [selectedAddons, setSelectedAddons] = useState<number[]>([]);
   const [addonLoading, setAddonLoading] = useState(false);
   const [allProducts, setAllProducts] = useState<any[]>([]);
+  const [customServices, setCustomServices] = useState<string[]>([]);
+  useEffect(() => { setCustomServices(readCustomServices(initialData?.custom_services)); }, [initialData, isOpen]);
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
   const [productLoading, setProductLoading] = useState(false);
 
@@ -1362,6 +1365,7 @@ const PackageFormModal: React.FC<PackageFormModalProps> = ({
     }
 
     // Append selected product associations
+    formData.append('custom_services', JSON.stringify(customServices));
     if (selectedProducts.length > 0) {
       formData.append("product_ids", JSON.stringify(selectedProducts));
     }
@@ -1673,6 +1677,8 @@ const PackageFormModal: React.FC<PackageFormModalProps> = ({
                 </label>
               </div>
             </div>
+
+            <div className="md:col-span-2"><CustomPackageServices key={`${initialData?.id || 'new'}-${isOpen}`} value={customServices} onChange={setCustomServices} /></div>
 
             {/* ─── ADD-ONS SELECTION ────────────────────────────────────────── */}
             <div className="md:col-span-2">

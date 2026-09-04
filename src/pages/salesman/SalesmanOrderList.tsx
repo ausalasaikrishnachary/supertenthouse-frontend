@@ -15,6 +15,7 @@ interface OrderItem {
 interface SalesmanOrder {
   id: number;
   order_number: string;
+  invoice_number?: string;
   customer_name?: string;
   event_date?: string;
   created_at?: string;
@@ -148,6 +149,7 @@ export default function SalesmanOrderList() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="font-bold text-[#0c2d67]">#{order.order_number}</p>
+                    <p className="text-xs text-blue-700">Invoice Number: {order.invoice_number || 'Pending generation'}</p>
                     <p className="text-sm text-gray-700 mt-1">{order.customer_name || 'Customer'}</p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${statusClass(order.status)}`}>{order.status}</span>

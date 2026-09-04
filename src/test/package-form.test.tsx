@@ -19,7 +19,20 @@ it("renders the open modal and submits selected product associations", async () 
   const view = render(<PackageFormModal isOpen onClose={() => {}} onSubmit={submit} />);
   await act(async () => {});
   fireEvent.click(screen.getByText("Test Tent"));
+  fireEvent.change(screen.getByLabelText('Add a custom service'), { target: { value: 'Valet Parking' } });
+  fireEvent.click(screen.getByText('Add service'));
   fireEvent.submit(view.container.querySelector("form")!);
   expect(submit).toHaveBeenCalledTimes(1);
   expect(JSON.parse(submit.mock.calls[0][0].get("product_ids"))).toEqual([143]);
+  expect(JSON.parse(submit.mock.calls[0][0].get('custom_services'))).toEqual(['Valet Parking']);
+});
+
+it('reopens saved custom services and submits an empty list when removed', async () => {
+  const submit = vi.fn();
+  const view = render(<PackageFormModal isOpen initialData={{ id: 7, custom_services: '["Valet Parking"]' }} onClose={() => {}} onSubmit={submit} />);
+  await act(async () => {});
+  expect(screen.getByLabelText('Valet Parking')).toBeChecked();
+  fireEvent.click(screen.getByLabelText('Remove Valet Parking'));
+  fireEvent.submit(view.container.querySelector('form')!);
+  expect(submit.mock.calls[0][0].get('custom_services')).toBe('[]');
 });

@@ -759,6 +759,7 @@ const AdminOrders: React.FC = () => {
                     onClick={() => {
                       axios({
                         url: `${BASE_URL}/api/invoice/generate-pdf`,
+                        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
                         method: 'POST',
                         responseType: 'blob',
                         data: {

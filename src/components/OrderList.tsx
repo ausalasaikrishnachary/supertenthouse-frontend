@@ -820,7 +820,7 @@ const AdminOrders: React.FC = () => {
                           <p className="text-sm font-medium text-[#0c2d67]">{order.order_number}</p>
                           {order.invoice_number && (
                             <p className="text-xs font-semibold text-blue-600" title="Invoice Number">
-                              {order.invoice_number}
+                              Invoice Number: {order.invoice_number}
                             </p>
                           )}
                           <p className="text-xs text-gray-500">ID: #{order.id}</p>

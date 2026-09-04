@@ -43,17 +43,7 @@ interface DashboardStats {
   recentOrders: DashboardOrder[];
 }
 
-interface SalesmanNotification {
-  id: number;
-  order_id: number;
-  order_number: string;
-  previous_status: string;
-  new_status: string;
-  title: string;
-  message: string;
-  is_read: number | boolean;
-  created_at: string;
-}
+
 
 const getApiErrorMessage = (error: unknown, fallback: string) =>
   axios.isAxiosError(error) ? error.response?.data?.message || fallback : fallback;
@@ -70,8 +60,6 @@ const SalesmanDashboard: React.FC = () => {
   });
   const [user, setUser] = useState<SalesmanUser | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [notifications, setNotifications] = useState<SalesmanNotification[]>([]);
-  const [notificationError, setNotificationError] = useState<string | null>(null);
 
   useEffect(() => {
     // Check if user is logged in as salesman
@@ -89,71 +77,11 @@ const SalesmanDashboard: React.FC = () => {
     }
     
     fetchDashboardData();
-    fetchNotifications();
-
-    const intervalId = window.setInterval(fetchNotifications, 30000);
-    const refreshOnFocus = () => fetchNotifications();
-    window.addEventListener('focus', refreshOnFocus);
-
-    return () => {
-      window.clearInterval(intervalId);
-      window.removeEventListener('focus', refreshOnFocus);
-    };
-    // This setup intentionally runs once; polling reads the current token on every request.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const authHeaders = () => ({
     Authorization: `Bearer ${localStorage.getItem('token')}`
   });
-
-  const fetchNotifications = async () => {
-    try {
-      const response = await axios.get(`${BASE_URL}/api/salesman/notifications`, {
-        headers: authHeaders()
-      });
-      setNotifications(response.data?.data || []);
-      setNotificationError(null);
-    } catch (err: unknown) {
-      console.error('Error fetching salesman notifications:', err);
-      setNotificationError(getApiErrorMessage(err, 'Failed to load notifications'));
-    }
-  };
-
-  const markNotificationRead = async (notificationId: number) => {
-    try {
-      await axios.put(
-        `${BASE_URL}/api/salesman/notifications/${notificationId}/read`,
-        {},
-        { headers: authHeaders() }
-      );
-      setNotifications(current => current.map(notification =>
-        notification.id === notificationId ? { ...notification, is_read: 1 } : notification
-      ));
-    } catch (err: unknown) {
-      setNotificationError(getApiErrorMessage(err, 'Failed to mark notification as read'));
-    }
-  };
-
-  const openNotification = async (notification: SalesmanNotification) => {
-    if (!notification.is_read) await markNotificationRead(notification.id);
-    if (notification.order_source === 'admin') {
-      window.alert(`${notification.title}\n\n${notification.message}`);
-      return;
-    }
-    navigate(`/salesman/order-details/${notification.order_id}`);
-  };
-
-  const markAllNotificationsRead = async () => {
-    try {
-      await axios.put(`${BASE_URL}/api/salesman/notifications/read-all`, {}, {
-        headers: authHeaders()
-      });
-      setNotifications(current => current.map(notification => ({ ...notification, is_read: 1 })));
-    } catch (err: unknown) {
-      setNotificationError(getApiErrorMessage(err, 'Failed to mark notifications as read'));
-    }
-  };
 
   const fetchDashboardData = async () => {
     setLoading(true);
@@ -227,7 +155,6 @@ const SalesmanDashboard: React.FC = () => {
     }
   };
 
-  const unreadCount = notifications.filter(notification => !notification.is_read).length;
 
   if (loading) {
     return (
@@ -276,71 +203,6 @@ const SalesmanDashboard: React.FC = () => {
             Welcome, {user?.name || 'Salesman'}!
           </h1>
           <p className="text-gray-500 mt-1">Here's an overview of your orders</p>
-        </div>
-
-        {/* Order status notifications */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
-          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <Bell size={22} className="text-[#0c2d67]" />
-                {unreadCount > 0 && (
-                  <span className="absolute -right-2 -top-2 min-w-5 h-5 px-1 rounded-full bg-red-600 text-white text-[11px] flex items-center justify-center">
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </span>
-                )}
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold text-gray-800">Order Updates</h2>
-                <p className="text-xs text-gray-500">Status changes for orders assigned to you</p>
-              </div>
-            </div>
-            {unreadCount > 0 && (
-              <button
-                onClick={markAllNotificationsRead}
-                className="text-sm text-[#0c2d67] hover:underline flex items-center gap-1"
-              >
-                <CheckCheck size={16} /> Mark all read
-              </button>
-            )}
-          </div>
-
-          {notificationError ? (
-            <div className="px-6 py-4 text-sm text-red-600 flex items-center justify-between gap-4">
-              <span>{notificationError}</span>
-              <button onClick={fetchNotifications} className="font-medium hover:underline">Retry</button>
-            </div>
-          ) : notifications.length === 0 ? (
-            <div className="px-6 py-8 text-center text-gray-500">
-              <Bell size={32} className="mx-auto text-gray-300 mb-2" />
-              <p>No order updates yet.</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-100 max-h-80 overflow-y-auto">
-              {notifications.slice(0, 10).map(notification => (
-                <button
-                  key={notification.id}
-                  onClick={() => openNotification(notification)}
-                  className={`w-full px-6 py-4 text-left hover:bg-gray-50 transition-colors ${
-                    notification.is_read ? 'bg-white' : 'bg-blue-50/60'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className={`text-sm ${notification.is_read ? 'font-medium text-gray-700' : 'font-semibold text-gray-900'}`}>
-                        {notification.title}
-                      </p>
-                      <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        {new Date(notification.created_at).toLocaleString()}
-                      </p>
-                    </div>
-                    {!notification.is_read && <span className="w-2.5 h-2.5 rounded-full bg-blue-600 mt-1 shrink-0" />}
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
         {/* Stats Cards */}

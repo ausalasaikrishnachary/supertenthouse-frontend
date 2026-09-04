@@ -12,6 +12,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import logo from '@/assets/STH PNG.png';
+import SalesmanNotificationBell from './SalesmanNotificationBell';
 
 interface SalesmanNavbarProps {
   userName?: string;
@@ -50,6 +51,7 @@ const SalesmanNavbar: React.FC<SalesmanNavbarProps> = ({ userName }) => {
             <span className="text-xl font-bold drop-shadow-lg">Salesman Panel</span>
           </div>
 
+          <SalesmanNotificationBell />
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
             {navItems.map((item) => (

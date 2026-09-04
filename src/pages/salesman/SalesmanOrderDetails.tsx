@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowLeft, CalendarDays, CreditCard, MapPin, Package, Phone, UserRound, Users } from 'lucide-react';
 import BASE_URL from '@/Config/Api';
@@ -19,6 +19,7 @@ interface OrderItem {
 interface SalesmanOrderDetailsData {
   id: number;
   order_number: string;
+  invoice_number?: string;
   status: string;
   payment_status: string;
   payment_method?: string;
@@ -58,6 +59,8 @@ const dateTime = (value?: string) => value && !Number.isNaN(new Date(value).getT
 
 export default function SalesmanOrderDetails() {
   const { id } = useParams();
+  const [params] = useSearchParams();
+  const source = params.get('source') || 'salesman';
   const navigate = useNavigate();
   const [order, setOrder] = useState<SalesmanOrderDetailsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,13 +68,13 @@ export default function SalesmanOrderDetails() {
 
   useEffect(() => {
     const fetchOrder = async () => {
-      if (!id) {
+      if (!id || !['admin', 'salesman'].includes(source)) {
         setError('Invalid order');
         setLoading(false);
         return;
       }
       try {
-        const response = await axios.get(`${BASE_URL}/api/salesman-orders/${id}`, {
+        const response = await axios.get(source === 'admin' ? `${BASE_URL}/api/salesman/notifications/admin-orders/${id}` : `${BASE_URL}/api/salesman-orders/${id}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
         setOrder({ ...response.data.data, items: Array.isArray(response.data.data?.items) ? response.data.data.items : [] });
@@ -83,7 +86,7 @@ export default function SalesmanOrderDetails() {
       }
     };
     fetchOrder();
-  }, [id]);
+  }, [id, source]);
 
   if (loading) return <div className="min-h-screen bg-gray-50"><SalesmanNavbar /><div className="max-w-5xl mx-auto p-8"><div className="bg-white rounded-xl border p-12 text-center text-gray-500">Loading order details…</div></div></div>;
   if (error || !order) return <div className="min-h-screen bg-gray-50"><SalesmanNavbar /><div className="max-w-5xl mx-auto p-8 text-center"><div className="bg-white rounded-xl border p-12"><Package className="mx-auto text-gray-300 mb-3" size={42} /><p className="text-gray-800 font-semibold">{error || 'Order not found'}</p><button onClick={() => navigate('/salesman/orders')} className="mt-5 px-4 py-2 bg-[#0c2d67] text-white rounded-lg">Back to orders</button></div></div></div>;
@@ -96,7 +99,7 @@ export default function SalesmanOrderDetails() {
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <button onClick={() => navigate('/salesman/orders')} className="flex items-center gap-2 text-[#0c2d67] font-medium mb-5 hover:underline"><ArrowLeft size={18} /> Back to orders</button>
         <div className="bg-white rounded-xl border shadow-sm p-6 mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div><p className="text-sm text-gray-500">Order details</p><h1 className="text-2xl font-bold text-gray-900">#{order.order_number}</h1><p className="text-xs text-gray-400 mt-1">Created {dateTime(order.created_at)}</p></div>
+          <div><p className="text-sm text-gray-500">Order details</p><h1 className="text-2xl font-bold text-gray-900">#{order.order_number}</h1><p className="text-sm text-blue-700">Invoice Number: {order.invoice_number || 'Pending generation'}</p><p className="text-xs text-gray-400 mt-1">Created {dateTime(order.created_at)}</p></div>
           <span className={`self-start px-4 py-2 rounded-full text-sm font-semibold capitalize ${statusClass(order.status)}`}>{order.status || 'pending'}</span>
         </div>
 
