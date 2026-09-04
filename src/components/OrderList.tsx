@@ -8,6 +8,7 @@ import {
   MapPin, Clock, Users, MessageSquare, Tag, Home
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
+import DownloadInvoice, { hasInvoice } from '@/components/DownloadInvoice';
 
 // ============================================================
 // TYPES
@@ -479,8 +480,8 @@ const AdminOrders: React.FC = () => {
   // HELPERS
   // ============================================================
   const viewInvoice = (order: UnifiedOrder) => {
-    if (!isCompletedOrder(getOrderStatus(order))) {
-      alert('Invoice is available only after the order status is completed.');
+    if (!hasInvoice(order)) {
+      alert('Invoice is available after an invoice number has been generated.');
       return;
     }
 
@@ -783,7 +784,7 @@ const AdminOrders: React.FC = () => {
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order #</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order # / Invoice</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Source</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Address</th>
@@ -817,7 +818,12 @@ const AdminOrders: React.FC = () => {
                       <td className="px-6 py-4">
                         <div>
                           <p className="text-sm font-medium text-[#0c2d67]">{order.order_number}</p>
-                          <p className="text-xs text-gray-500">#{order.id}</p>
+                          {order.invoice_number && (
+                            <p className="text-xs font-semibold text-blue-600" title="Invoice Number">
+                              {order.invoice_number}
+                            </p>
+                          )}
+                          <p className="text-xs text-gray-500">ID: #{order.id}</p>
                         </div>
                       </td>
                       <td className="px-6 py-4">{renderSourceBadge(order)}</td>
@@ -921,6 +927,7 @@ const AdminOrders: React.FC = () => {
                           >
                             <Eye size={18} />
                           </button>
+                          <DownloadInvoice order={order} />
                           <button
                             onClick={() => deleteOrder(order)}
                             className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
@@ -975,6 +982,11 @@ const AdminOrders: React.FC = () => {
                   <h3 className="font-semibold text-gray-700 flex items-center gap-2 mb-2">
                     <Calendar size={16} /> Order Details
                   </h3>
+                  {selectedOrder.invoice_number && (
+                    <p className="text-sm text-[#0c2d67] font-semibold">
+                      <strong>Invoice Number:</strong> {selectedOrder.invoice_number}
+                    </p>
+                  )}
                   <p className="text-sm text-gray-800"><strong>Status:</strong> {getOrderStatus(selectedOrder)}</p>
                   <p className="text-sm text-gray-800"><strong>Payment:</strong> {selectedOrder.payment_status}</p>
                   {/* <p className="text-sm text-gray-800"><strong>Method:</strong> {selectedOrder.payment_method}</p> */}
@@ -1177,7 +1189,7 @@ const AdminOrders: React.FC = () => {
             </div>
 
             <div className="p-6 border-t flex flex-wrap gap-4 justify-end bg-gray-50">
-              {isCompletedOrder(getOrderStatus(selectedOrder)) && (
+              {hasInvoice(selectedOrder) && (
                 <button
                   onClick={() => { closeDetailsModal(); viewInvoice(selectedOrder); }}
                   className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
@@ -1185,6 +1197,7 @@ const AdminOrders: React.FC = () => {
                   <Printer size={18} /> View Invoice
                 </button>
               )}
+              <DownloadInvoice order={selectedOrder} />
               <button onClick={closeDetailsModal} className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
                 Close
               </button>
@@ -1207,7 +1220,10 @@ const AdminOrders: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <h2 className="text-4xl font-bold">INVOICE</h2>
-                  <p className="text-lg mt-2">{selectedOrder.order_number}</p>
+                  <p className="text-lg mt-2 font-bold text-[#0c2d67]">
+                    Invoice Number: {selectedOrder.invoice_number || 'N/A'}
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">Order #: {selectedOrder.order_number}</p>
                   <p className="text-blue-200">
                     Date: {new Date(selectedOrder.created_at || selectedOrder.order_date || '').toLocaleDateString()}
                   </p>
@@ -1235,6 +1251,9 @@ const AdminOrders: React.FC = () => {
                     <Calendar size={18} /> Order Details
                   </h3>
                   <div className="mt-2 space-y-1">
+                    {selectedOrder.invoice_number && (
+                      <p className="text-gray-800"><strong>Invoice Number:</strong> {selectedOrder.invoice_number}</p>
+                    )}
                     <p className="text-gray-800"><strong>Order #:</strong> {selectedOrder.order_number}</p>
                     <p className="text-gray-800"><strong>Status:</strong> {getOrderStatus(selectedOrder)}</p>
                     <p className="text-gray-800"><strong>Payment:</strong> {selectedOrder.payment_status}</p>

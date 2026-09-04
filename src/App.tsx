@@ -23,11 +23,13 @@ import AdminAddons from "./pages/AdminAddons";
 import AdminOrders from "./pages/AdminOrders";
 import AdminCoupons from "./pages/coupons";
 import AdminDashboard from "./pages/dashboard";
-import SalesmanOrders from "./pages/salesman/orders";
+import SalesmanOrders from "./pages/salesman/SalesmanOrderList";
+import SalesmanOrderDetails from "./pages/salesman/SalesmanOrderDetails";
 import SalesmanDashboard from "./pages/salesman/dashboard";
 // import AdminDashboard from "./components/AdminDashboard"
 // import ProfileSettings from "./components/ProfileSettings";
 import SalesmanCreateOrder from "@/pages/salesman/SalesmanCreateOrder";
+import SalesmanProtectedRoute from "@/components/SalesmanProtectedRoute";
 
 
 
@@ -69,9 +71,10 @@ const App = () => (
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
               
 
-              <Route path="/salesman/dashboard" element={<SalesmanDashboard />} />
-              <Route path="/salesman/orders" element={<SalesmanOrders />} />
-              <Route path="/salesman/create-order" element={<SalesmanCreateOrder />} />
+              <Route path="/salesman/dashboard" element={<SalesmanProtectedRoute><SalesmanDashboard /></SalesmanProtectedRoute>} />
+              <Route path="/salesman/orders" element={<SalesmanProtectedRoute><SalesmanOrders /></SalesmanProtectedRoute>} />
+              <Route path="/salesman/order-details/:id" element={<SalesmanProtectedRoute><SalesmanOrderDetails /></SalesmanProtectedRoute>} />
+              <Route path="/salesman/create-order" element={<SalesmanProtectedRoute><SalesmanCreateOrder /></SalesmanProtectedRoute>} />
 
 
 

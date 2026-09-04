@@ -1138,6 +1138,9 @@ const PackageFormModal: React.FC<PackageFormModalProps> = ({
   const [allAddons, setAllAddons] = useState<any[]>([]);
   const [selectedAddons, setSelectedAddons] = useState<number[]>([]);
   const [addonLoading, setAddonLoading] = useState(false);
+  const [allProducts, setAllProducts] = useState<any[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
+  const [productLoading, setProductLoading] = useState(false);
 
   // ─── Fetch Add-Ons ──────────────────────────────────────────────
   useEffect(() => {
@@ -1152,7 +1155,19 @@ const PackageFormModal: React.FC<PackageFormModalProps> = ({
         setAddonLoading(false);
       }
     };
+    const fetchProducts = async () => {
+      try {
+        setProductLoading(true);
+        const res = await axios.get(`${BASE_URL}/api/products`);
+        setAllProducts(res.data.filter((p: any) => p.is_active === 1 || p.is_active === undefined));
+      } catch (error) {
+        console.error("Failed to fetch products:", error);
+      } finally {
+        setProductLoading(false);
+      }
+    };
     fetchAddons();
+    fetchProducts();
   }, []);
 
   // ─── Fetch Package Add-Ons when editing ────────────────────────
@@ -1167,7 +1182,18 @@ const PackageFormModal: React.FC<PackageFormModalProps> = ({
           console.error("Failed to fetch package add-ons:", error);
         }
       };
+      const fetchPackageProducts = async () => {
+        try {
+          const res = await axios.get(`${BASE_URL}/api/packages/${initialData.id}/products`);
+          setSelectedProducts(res.data.map((p: any) => p.id));
+        } catch (error) {
+          console.error("Failed to fetch package products:", error);
+        }
+      };
       fetchPackageAddons();
+      fetchPackageProducts();
+    } else {
+      setSelectedProducts([]);
     }
   }, [initialData]);
 
@@ -1178,6 +1204,49 @@ const PackageFormModal: React.FC<PackageFormModalProps> = ({
         ? prev.filter(id => id !== addonId)
         : [...prev, addonId]
     );
+  };
+
+  const handleProductSelect = (productId: number) => {
+    const product = allProducts.find(p => p.id === productId);
+    if (!product) return;
+
+    // Toggle product in selection
+    let nextProducts = [];
+    if (selectedProducts.includes(productId)) {
+      nextProducts = selectedProducts.filter(id => id !== productId);
+      setSelectedProducts(nextProducts);
+    } else {
+      nextProducts = [...selectedProducts, productId];
+      setSelectedProducts(nextProducts);
+
+      // Auto-extract and populate details/facilities
+      const newIncludes = form.includes 
+        ? form.includes.split(',').map((x: string) => x.trim()) 
+        : [];
+      
+      if (product.product_name && !newIncludes.includes(product.product_name)) {
+        newIncludes.push(product.product_name);
+      }
+
+      // Populate services/facilities checkboxes based on product specs or categories
+      const categoryName = String(product.category_name || "").toLowerCase();
+      const productName = String(product.product_name || "").toLowerCase();
+      const desc = product.product_description || product.description || "";
+
+      setForm(prev => ({
+        ...prev,
+        includes: newIncludes.join(', '),
+        description: prev.description ? prev.description + "\n" + desc : desc,
+        catering: prev.catering || categoryName.includes('catering') || productName.includes('catering'),
+        stage_decoration: prev.stage_decoration || categoryName.includes('decor') || productName.includes('stage') || productName.includes('decor'),
+        flower_decoration: prev.flower_decoration || categoryName.includes('flower') || productName.includes('flower'),
+        lighting: prev.lighting || categoryName.includes('light') || productName.includes('light'),
+        photography: prev.photography || categoryName.includes('photo') || productName.includes('photo'),
+        videography: prev.videography || categoryName.includes('video') || productName.includes('video'),
+        sound_system: prev.sound_system || categoryName.includes('sound') || productName.includes('sound') || productName.includes('speaker'),
+        dj_setup: prev.dj_setup || productName.includes('dj') || productName.includes('music'),
+      }));
+    }
   };
 
   useEffect(() => {
@@ -1292,6 +1361,11 @@ const PackageFormModal: React.FC<PackageFormModalProps> = ({
       formData.append("addon_ids", JSON.stringify(selectedAddons));
     }
 
+    // Append selected product associations
+    if (selectedProducts.length > 0) {
+      formData.append("product_ids", JSON.stringify(selectedProducts));
+    }
+
     // Append existing images
     existingImages.forEach((imagePath) => {
       formData.append("existing_images", imagePath);
@@ -1331,6 +1405,39 @@ const PackageFormModal: React.FC<PackageFormModalProps> = ({
 
         <form onSubmit={handleSubmit} className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Associated Products Selector */}
+            <div className="md:col-span-2 border-b border-gray-100 pb-4 mb-2">
+              <label className="block text-sm font-medium text-[#0c2d67] mb-2 font-bold flex items-center gap-1.5">
+                <span>Select & Auto-Populate Products</span>
+                <span className="text-xs text-gray-400 font-normal">(Retrieves and merges product specifications dynamically)</span>
+              </label>
+              {productLoading ? (
+                <div className="text-xs text-gray-500">Loading available products...</div>
+              ) : (
+                <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto p-3 border rounded-xl bg-gray-50">
+                  {allProducts.map((product) => {
+                    const isSelected = selectedProducts.includes(product.id);
+                    return (
+                      <button
+                        key={product.id}
+                        type="button"
+                        onClick={() => handleProductSelect(product.id)}
+                        className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all duration-200 flex items-center gap-1.5 ${
+                          isSelected
+                            ? 'bg-[#0c2d67] text-white border-[#0c2d67] shadow-sm'
+                            : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        {isSelected && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>}
+                        <span>{product.product_name}</span>
+                        <span className="text-[10px] opacity-60 font-normal">({product.category_name || 'Product'})</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
             {/* Package Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">

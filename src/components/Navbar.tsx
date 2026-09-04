@@ -14,8 +14,7 @@ import {
   Gift,
   LayoutGrid,
   Plus,
-  ShoppingCart,
-  Tag // Added for Coupons
+  ShoppingCart
 } from 'lucide-react';
 import logo from '@/assets/STH PNG.png';
 
@@ -36,7 +35,6 @@ const Navbar = () => {
     { name: 'Products', path: '/admin-products', icon: ShoppingBag },
     { name: 'Packages', path: '/admin/packages', icon: Gift },
     { name: 'Add-Ons', path: '/admin-addons', icon: Plus },
-    { name: 'Coupons', path: '/admin/coupons', icon: Tag }, // Added Coupons
     { name: 'Users', path: '/users', icon: Users },
   ];
 

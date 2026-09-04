@@ -462,6 +462,11 @@ const AdminOrders: React.FC = () => {
                             </button>
                             <div>
                               <div className="text-sm font-medium text-gray-900">#{order.order_number}</div>
+                              {order.invoice_number && (
+                                <div className="text-xs font-semibold text-blue-600">
+                                  Invoice: {order.invoice_number}
+                                </div>
+                              )}
                               <div className="text-xs text-gray-500">{new Date(order.created_at).toLocaleDateString()}</div>
                             </div>
                           </div>
@@ -572,6 +577,11 @@ const AdminOrders: React.FC = () => {
                               </div>
                               <div>
                                 <h4 className="font-medium text-sm text-gray-700 mb-2">Order Summary</h4>
+                                {selectedOrder?.invoice_number && (
+                                  <p className="text-sm text-gray-600 mb-2">
+                                    <strong>Invoice Number:</strong> <span className="text-blue-600 font-semibold">{selectedOrder.invoice_number}</span>
+                                  </p>
+                                )}
                                 <p className="text-sm text-gray-600">
                                   <strong>Subtotal:</strong> ₹{Number(order.subtotal).toFixed(2)}<br />
                                   <strong>Delivery:</strong> ₹{Number(order.delivery_charge).toFixed(2)}<br />
@@ -625,7 +635,12 @@ const AdminOrders: React.FC = () => {
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Order #{selectedOrder.order_number}</h2>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">Order #{selectedOrder.order_number}</h2>
+                  {selectedOrder.invoice_number && (
+                    <p className="text-xs font-semibold text-blue-600">Invoice Number: {selectedOrder.invoice_number}</p>
+                  )}
+                </div>
                 <p className="text-sm text-gray-600">{new Date(selectedOrder.created_at).toLocaleString()}</p>
               </div>
               <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
@@ -739,6 +754,40 @@ const AdminOrders: React.FC = () => {
               )}
 
               <div className="flex justify-end space-x-3">
+                {selectedOrder?.invoice_number && (
+                  <button
+                    onClick={() => {
+                      axios({
+                        url: `${BASE_URL}/api/invoice/generate-pdf`,
+                        method: 'POST',
+                        responseType: 'blob',
+                        data: {
+                          orderData: {
+                            ...selectedOrder,
+                            orderId: selectedOrder.id,
+                            orderSource: 'admin',
+                            orderNumber: selectedOrder.order_number,
+                            eventDate: selectedOrder.event_date
+                          }
+                        }
+                      }).then((response) => {
+                        const url = window.URL.createObjectURL(new Blob([response.data]));
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.setAttribute('download', `Invoice_${selectedOrder.invoice_number || selectedOrder.order_number}.pdf`);
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      }).catch(err => {
+                        console.error("Error generating PDF invoice:", err);
+                        alert("Failed to download PDF invoice");
+                      });
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Download Invoice PDF
+                  </button>
+                )}
                 <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                   Close
                 </button>

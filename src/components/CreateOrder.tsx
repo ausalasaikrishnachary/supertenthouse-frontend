@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import BASE_URL from '@/Config/Api';
+import { orderSubmissionError } from '@/lib/orderSubmission';
 import { 
   Plus, Minus, ShoppingCart, X, ChevronLeft, ChevronRight, ArrowLeft, 
   Printer, Download, FileText, User, Phone, Mail, Calendar, 
@@ -74,6 +75,7 @@ const CreateOrder: React.FC = () => {
   const [showProducts, setShowProducts] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState<{ [key: number]: number }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingOrder = useRef(false);
   const [showInvoice, setShowInvoice] = useState(false);
   const [placedOrder, setPlacedOrder] = useState<OrderResponse | null>(null);
   const [orderDate, setOrderDate] = useState(new Date());
@@ -265,6 +267,7 @@ const CreateOrder: React.FC = () => {
   };
 
   const placeOrder = async () => {
+    if (submittingOrder.current) return;
     if (!selectedUser) {
       showToast('Please select a customer', 'error');
       return;
@@ -275,6 +278,7 @@ const CreateOrder: React.FC = () => {
       return;
     }
 
+    submittingOrder.current = true;
     setIsSubmitting(true);
     try {
       const token = localStorage.getItem('token');
@@ -306,8 +310,9 @@ const CreateOrder: React.FC = () => {
       showToast('Order placed successfully! 🎉', 'success');
     } catch (error: any) {
       console.error('Error placing order:', error);
-      showToast(error.response?.data?.message || 'Failed to place order', 'error');
+      showToast(orderSubmissionError(error), 'error');
     } finally {
+      submittingOrder.current = false;
       setIsSubmitting(false);
     }
   };
@@ -457,6 +462,9 @@ const CreateOrder: React.FC = () => {
                   <h3 className="font-semibold text-gray-700">Order Details</h3>
                   <div className="mt-2 space-y-1">
                     <p className="text-gray-800"><strong>Order ID:</strong> #{placedOrder.order_id}</p>
+                    {placedOrder.order?.invoice_number && (
+                      <p className="text-sm text-blue-600 font-bold"><strong>Invoice Number:</strong> {placedOrder.order.invoice_number}</p>
+                    )}
                     <p className="text-gray-800"><strong>Status:</strong> <span className="text-green-600">Confirmed</span></p>
                     <p className="text-gray-800"><strong>Payment:</strong> <span className="text-yellow-600">Pending</span></p>
                   </div>

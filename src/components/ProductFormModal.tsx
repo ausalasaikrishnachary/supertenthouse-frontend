@@ -612,8 +612,12 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
   const [images, setImages] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [existingColorImages, setExistingColorImages] = useState<Record<string, string[]>>({});
+  const [imageError, setImageError] = useState("");
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
+  const [availableAddons, setAvailableAddons] = useState<any[]>([]);
+  const [selectedAddons, setSelectedAddons] = useState<number[]>([]);
 
   const parseJSONArray = (value: any): string[] => {
     if (!value) return [];
@@ -683,7 +687,12 @@ useEffect(() => {
     setSizes(parseJSONArray(initialData.sizes));
 
     const colorImagesData = parseColorImages(initialData.color_images);
-
+    setExistingColorImages(colorImagesData);
+    setImages([]);
+    setColorImages({});
+    setColorImagePreviews({});
+    setSelectedColorForImages("");
+    setImageError("");
     setExistingImages(initialData.images || []);
     setImagePreviews(initialData.images ? initialData.images.map((img: string) => `${BASE_URL}/${img}`) : []);
   } else {
@@ -717,6 +726,8 @@ const resetForm = () => {
   setSizes([]);
   setImages([]);
   setExistingImages([]);
+  setExistingColorImages({});
+  setImageError("");
   setImagePreviews([]);
   setColorImages({});
   setColorImagePreviews({});
@@ -727,6 +738,17 @@ const resetForm = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
+      e.target.value = "";
+      const uploadCount = images.length + Object.values(colorImages).reduce((total, items) => total + items.length, 0);
+      if (uploadCount + files.length > 10) {
+        setImageError("Upload a maximum of 10 new images at a time across all colours.");
+        return;
+      }
+      if (files.some(file => !file.type.startsWith("image/") || file.size > 5 * 1024 * 1024)) {
+        setImageError("Choose image files no larger than 5MB each.");
+        return;
+      }
+      setImageError("");
       
       if (selectedColorForImages) {
         const currentColorImages = colorImages[selectedColorForImages] || [];
@@ -770,12 +792,14 @@ const resetForm = () => {
       newPreviews.splice(index, 1);
       setImagePreviews(newPreviews);
 
-      if (index < images.length) {
+      if (index >= existingImages.length) {
         const newImages = [...images];
-        newImages.splice(index, 1);
+        newImages.splice(index - existingImages.length, 1);
         setImages(newImages);
       } else {
-        const existingIndex = index - images.length;
+        const existingIndex = index;
+        const removedPath = existingImages[existingIndex];
+        setExistingColorImages(Object.fromEntries(Object.entries(existingColorImages).map(([key, paths]) => [key, paths.filter(path => path !== removedPath)])));
         const newExisting = [...existingImages];
         newExisting.splice(existingIndex, 1);
         setExistingImages(newExisting);
@@ -785,6 +809,8 @@ const resetForm = () => {
 
   const toggleColor = (colorHex: string) => {
     if (selectedColors.includes(colorHex)) {
+      if (selectedColorForImages === colorHex) setSelectedColorForImages("");
+      setExistingColorImages(Object.fromEntries(Object.entries(existingColorImages).filter(([key]) => key !== colorHex)));
       setSelectedColors(selectedColors.filter(c => c !== colorHex));
       const newColorImages = { ...colorImages };
       const newColorPreviews = { ...colorImagePreviews };
@@ -832,9 +858,9 @@ const resetForm = () => {
       formData.append("sizes", JSON.stringify(sizes));
     }
 
-    const colorImagesMapping: Record<string, string[]> = {};
+    const colorImagesMapping: Record<string, string[]> = { ...existingColorImages };
     Object.keys(colorImages).forEach(color => {
-      colorImagesMapping[color] = colorImages[color].map(file => file.name);
+      colorImagesMapping[color] = [...(existingColorImages[color] || []), ...colorImages[color].map(file => file.name)];
     });
     
     if (Object.keys(colorImagesMapping).length > 0) {
@@ -1144,13 +1170,13 @@ const resetForm = () => {
             </div>
 
             {/* COLOR-IMAGE MAPPING SECTION */}
-            {selectedColors.length > 0 && (
+            {(
               <div className="md:col-span-2 border-t border-gray-200 pt-4 mt-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Color-Specific Images
-                  <span className="text-xs text-gray-400 ml-2">(Upload images for each color)</span>
+                  Product Images
+                  <span className="text-xs text-gray-400 ml-2">(No colour required)</span>
                 </label>
-                
+                {selectedColors.length > 0 && (
                 <div className="mb-3">
                   <label className="block text-sm text-gray-600 mb-1">Select a color to upload images:</label>
                   <select
@@ -1158,7 +1184,7 @@ const resetForm = () => {
                     value={selectedColorForImages}
                     onChange={(e) => setSelectedColorForImages(e.target.value)}
                   >
-                    <option value="">Select a color</option>
+                    <option value="">General product images (no colour)</option>
                     {selectedColors.map((hex) => (
                       <option key={hex} value={hex}>
                         {getColorName(hex)} ({colorImages[hex]?.length || 0} images)
@@ -1166,6 +1192,22 @@ const resetForm = () => {
                     ))}
                   </select>
                 </div>
+                )}
+
+                {!selectedColorForImages && imagePreviews.length > 0 && (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 mb-3">
+                    {imagePreviews.map((preview, index) => (
+                      <div key={`${preview}-${index}`} className="relative">
+                        <img src={preview} alt={`Product image ${index + 1}`} className="w-full h-24 object-cover rounded-lg border border-gray-200" />
+                        <button type="button" aria-label={`Remove product image ${index + 1}`} onClick={() => removeImage(null, index)} className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full"><Trash2 size={14} /></button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {selectedColorForImages && existingColorImages[selectedColorForImages]?.map((path, index) => (
+                  <img key={path} src={`${BASE_URL}/${path}`} alt={`Saved colour image ${index + 1}`} className="inline-block w-24 h-24 object-cover rounded-lg border mr-2 mb-3" />
+                ))}
+                {imageError && <p role="alert" className="text-sm text-red-600 mb-3">{imageError}</p>}
 
                 {/* Color-specific image previews */}
                 {selectedColorForImages && colorImagePreviews[selectedColorForImages]?.length > 0 && (
@@ -1201,6 +1243,7 @@ const resetForm = () => {
                     onChange={handleImageChange}
                     className="w-full"
                     id="image-upload"
+                    aria-label="Upload product images"
                   />
                   <label htmlFor="image-upload" className="cursor-pointer flex flex-col items-center">
                     <Upload size={32} className="text-gray-400 mb-2" />
@@ -1210,7 +1253,7 @@ const resetForm = () => {
                         : "Upload general images (or select a color above)"}
                     </span>
                     <span className="text-xs text-gray-400">
-                      Maximum 10 images, 5MB each
+                      Maximum 10 new images per save across all colours, 5MB each
                     </span>
                   </label>
                 </div>

@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import BASE_URL from '@/Config/Api';
 import {
-  Trash2, Printer, User, Package, ShoppingBag,
-  Eye, X, CreditCard, Calendar, RefreshCw, UserCheck, ChevronDown,
+  Printer, User, Package, ShoppingBag,
+  Eye, X, CreditCard, Calendar, UserCheck, ChevronDown,
   MapPin, Home, MessageSquare, Tag
 } from 'lucide-react';
 import SalesmanNavbar from '@/components/SalesmanNavbar';
@@ -143,7 +143,6 @@ const SalesmanOrders: React.FC = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null);
   const [salesmanId, setSalesmanId] = useState<number | null>(null);
 
   // Cache for customer data to avoid repeated API calls
@@ -311,77 +310,6 @@ const SalesmanOrders: React.FC = () => {
   }, [filterType, customerOrders, adminOrders, salesmanOrders]);
 
   // ============================================================
-  // UPDATE STATUS
-  // ============================================================
-  const updateOrderStatus = async (order: UnifiedOrder, status: string) => {
-    const orderId = order.id;
-    const source = order._source;
-    let paymentStatus = 'pending';
-    if (status === 'completed' || status === 'approved') {
-      paymentStatus = 'paid';
-    } else if (status === 'cancelled' || status === 'rejected') {
-      paymentStatus = 'failed';
-    }
-
-    const setForSource = (updater: (list: UnifiedOrder[]) => UnifiedOrder[]) => {
-      if (source === 'customer') setCustomerOrders(updater);
-      else if (source === 'admin') setAdminOrders(updater);
-      else setSalesmanOrders(updater);
-    };
-
-    const previous =
-      source === 'customer' ? customerOrders : source === 'admin' ? adminOrders : salesmanOrders;
-
-    setForSource(prev =>
-      prev.map(o => (o.id === orderId ? { ...o, status, payment_status: paymentStatus } : o))
-    );
-
-    setUpdatingOrderId(orderId);
-    try {
-      const headers = authHeaders();
-      const endpoint = `${BASE_URL}/api/${SOURCE_META[source].endpoint}/${orderId}/status-payment`;
-      const payload = { status, payment_status: paymentStatus };
-
-      const response = await axios.put(endpoint, payload, { headers });
-
-      if (response.data?.data) {
-        const updated = { ...response.data.data, items: normalizeItems(response.data.data.items), _source: source };
-        setForSource(prev => prev.map(o => (o.id === orderId ? { ...o, ...updated } : o)));
-      } else if (response.data?.success) {
-        await fetchAllOrders();
-      } else {
-        throw new Error('Invalid response from server');
-      }
-
-      alert(`Order status updated to ${status.charAt(0).toUpperCase() + status.slice(1)}!`);
-    } catch (error: any) {
-      console.error('Error updating order status:', error);
-      setForSource(() => previous);
-      alert(`Failed to update order status: ${error.response?.data?.message || error.message}`);
-    } finally {
-      setUpdatingOrderId(null);
-    }
-  };
-
-  // ============================================================
-  // DELETE ORDER
-  // ============================================================
-  const deleteOrder = async (order: UnifiedOrder) => {
-    if (!window.confirm('Are you sure you want to delete this order?')) return;
-
-    try {
-      const headers = authHeaders();
-      const endpoint = `${BASE_URL}/api/${SOURCE_META[order._source].endpoint}/${order.id}`;
-      await axios.delete(endpoint, { headers });
-      await fetchAllOrders();
-      alert('Order deleted successfully');
-    } catch (error) {
-      console.error('Error deleting order:', error);
-      alert('Failed to delete order');
-    }
-  };
-
-  // ============================================================
   // HELPERS
   // ============================================================
   const viewInvoice = (order: UnifiedOrder) => {
@@ -543,42 +471,6 @@ const SalesmanOrders: React.FC = () => {
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(status)}`}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
-    );
-  };
-
-  const renderStatusActions = (order: UnifiedOrder) => {
-    const currentStatus = order.status || 'pending';
-    const isUpdating = updatingOrderId === order.id;
-
-    return (
-      <div className="flex flex-col gap-1">
-        <select
-          value={currentStatus}
-          onChange={(e) => updateOrderStatus(order, e.target.value)}
-          disabled={isUpdating}
-          className={`text-xs border rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-[#0c2d67] disabled:opacity-50 min-w-[100px]
-            ${currentStatus === 'pending' ? 'border-yellow-400 bg-yellow-50' :
-              currentStatus === 'approved' ? 'border-green-400 bg-green-50' :
-                currentStatus === 'completed' ? 'border-purple-400 bg-purple-50' :
-                  currentStatus === 'processing' ? 'border-blue-400 bg-blue-50' :
-                    currentStatus === 'rejected' ? 'border-red-400 bg-red-50' :
-                      currentStatus === 'cancelled' ? 'border-red-400 bg-red-50' :
-                        'border-gray-300 bg-gray-50'
-            }`}
-        >
-          <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="processing">Processing</option>
-          <option value="completed">Completed</option>
-          <option value="rejected">Rejected</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
-        {isUpdating && (
-          <span className="text-xs text-gray-400 flex items-center gap-1">
-            <RefreshCw size={12} className="animate-spin" /> Updating...
-          </span>
-        )}
-      </div>
     );
   };
 
@@ -752,7 +644,12 @@ const SalesmanOrders: React.FC = () => {
                       <td className="px-6 py-4">
                         <div>
                           <p className="text-sm font-medium text-[#0c2d67]">{order.order_number}</p>
-                          <p className="text-xs text-gray-500">#{order.id}</p>
+                          {order.invoice_number && (
+                            <p className="text-xs font-semibold text-blue-600">
+                              {order.invoice_number}
+                            </p>
+                          )}
+                          <p className="text-xs text-gray-500">ID: #{order.id}</p>
                         </div>
                       </td>
                       <td className="px-6 py-4">{renderSourceBadge(order)}</td>
@@ -832,10 +729,7 @@ const SalesmanOrders: React.FC = () => {
                         )}
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex flex-col gap-1">
-                          {renderStatusBadge(order)}
-                          {renderStatusActions(order)}
-                        </div>
+                        {renderStatusBadge(order)}
                       </td>
                       <td className="px-6 py-4">
                         {renderPaymentStatusBadge(order)}
@@ -864,13 +758,6 @@ const SalesmanOrders: React.FC = () => {
                           >
                             <Eye size={18} />
                           </button>
-                          <button
-                            onClick={() => deleteOrder(order)}
-                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Delete Order"
-                          >
-                            <Trash2 size={18} />
-                          </button>
                         </div>
                       </td>
                     </tr>
@@ -890,6 +777,9 @@ const SalesmanOrders: React.FC = () => {
               <div>
                 <h2 className="text-2xl font-bold">Order Details</h2>
                 <p className="text-blue-200">{selectedOrder.order_number}</p>
+                {selectedOrder.invoice_number && (
+                  <p className="text-xs font-semibold text-blue-100 mt-1">Invoice Number: {selectedOrder.invoice_number}</p>
+                )}
                 <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase bg-white/20">
                   {SOURCE_META[selectedOrder._source].label} Order
                 </span>
@@ -918,6 +808,9 @@ const SalesmanOrders: React.FC = () => {
                   <h3 className="font-semibold text-gray-700 flex items-center gap-2 mb-2">
                     <Calendar size={16} /> Order Details
                   </h3>
+                  {selectedOrder.invoice_number && (
+                    <p className="text-sm text-[#0c2d67] font-semibold"><strong>Invoice Number:</strong> {selectedOrder.invoice_number}</p>
+                  )}
                   <p className="text-sm text-gray-800"><strong>Status:</strong> {selectedOrder.order_status || selectedOrder.status}</p>
                   <p className="text-sm text-gray-800"><strong>Payment:</strong> {selectedOrder.payment_status}</p>
                   <p className="text-sm text-gray-800"><strong>Method:</strong> {selectedOrder.payment_method}</p>
