@@ -152,19 +152,15 @@ const AdminLogin = () => {
         redirectPath = "/salesman/dashboard";
       }
 
-      console.log('📦 Login attempt:', { endpoint, email, role });
-
       const res = await axios.post(endpoint, {
         email,
         password,
       });
 
-      console.log('📦 Login response:', res.data);
-
       if (res.data.success) {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("user", JSON.stringify(res.data.user));
-        localStorage.setItem("role", role);
+        localStorage.setItem("role", res.data.user?.role || role);
         
         alert("Login successful ✅");
         
@@ -174,9 +170,6 @@ const AdminLogin = () => {
         setError(res.data.message || "Login failed ❌");
       }
     } catch (err: any) {
-      console.error("Login error:", err);
-      console.error("Error response:", err.response?.data);
-      
       if (err.response?.data?.message) {
         setError(err.response.data.message);
       } else if (err.response?.status === 401) {

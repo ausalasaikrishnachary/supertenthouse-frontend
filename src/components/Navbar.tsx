@@ -48,7 +48,7 @@ const Navbar = () => {
               <img 
                 src={logo} 
                 alt="Logo" 
-                className="h-10 w-10 object-contain drop-shadow-lg filter brightness-0 invert" 
+                className="h-10 w-10 object-contain drop-shadow-lg filter" 
               />
             </div>
             <span className="text-xl font-bold drop-shadow-lg">Admin Panel</span>
