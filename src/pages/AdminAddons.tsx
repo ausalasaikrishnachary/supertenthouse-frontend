@@ -245,7 +245,7 @@ const handleEditAddon = async (formData: any) => {
                   currentItems.map((addon) => (
                     <tr key={addon.id} className="hover:bg-gray-50 transition-colors duration-150">
                       <td className="px-4 py-3 text-sm font-mono text-gray-600">#{addon.id}</td>
-                      <td className="px-4 py-3 text-2xl">{addon.icon || '📦'}</td>
+                      <td className="px-4 py-3 ">{addon.icon || '📦'}</td>
                       <td className="px-4 py-3">
                         <div className="font-medium text-sm text-gray-900">{addon.name}</div>
                         {addon.description && (

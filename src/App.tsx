@@ -12,7 +12,7 @@ import NotFound from "./pages/NotFound";
 import WhatsAppFloat from "./WhatsAppFloat";
 import Login from "./pages/Login";
 import ChangePassword from "./pages/ForgotPassword";
-import ProtectedRoute from "./test/ProtectedRoute";
+import AdminProtectedRoute from "./components/AdminProtectedRoute";
 import AdminCategories from "./pages/AdminCategories";
 import AdminUsersProfile from "./pages/UserProfiles";
 import AdminProducts from "./pages/AdminProducts";
@@ -56,19 +56,19 @@ const App = () => (
             <Route path="/" element={<Login />} />
             
             {/* Admin Blog Management - Protected */}
-             <Route path="/admin-categories" element={<AdminCategories />} />
-              <Route path="/admin-products" element={<AdminProducts />} />
-             <Route path="/users" element={<AdminUsersProfile />} />
-             <Route path="/admin/packages" element={<AdminPackages />} />
-             <Route path="/admin-addons" element={<AdminAddons />} />
-              <Route path="/admin-orders" element={<AdminOrders />} />
+             <Route path="/admin-categories" element={<AdminProtectedRoute><AdminCategories /></AdminProtectedRoute>} />
+              <Route path="/admin-products" element={<AdminProtectedRoute><AdminProducts /></AdminProtectedRoute>} />
+             <Route path="/users" element={<AdminProtectedRoute><AdminUsersProfile /></AdminProtectedRoute>} />
+             <Route path="/admin/packages" element={<AdminProtectedRoute><AdminPackages /></AdminProtectedRoute>} />
+             <Route path="/admin-addons" element={<AdminProtectedRoute><AdminAddons /></AdminProtectedRoute>} />
+              <Route path="/admin-orders" element={<AdminProtectedRoute><AdminOrders /></AdminProtectedRoute>} />
              {/* <Route path="/dashboard" element={<AdminDashboard />} /> */}
               {/* <Route path="/profile" element={<ProfileSettings />} /> */}
 
-              <Route path="/admin/create-order/:userId?" element={<CreateOrder />} />
-              <Route path="/admin/orders" element={<OrdersList />} />
-              <Route path="/admin/coupons" element={<AdminCoupons />} />
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/create-order/:userId?" element={<AdminProtectedRoute><CreateOrder /></AdminProtectedRoute>} />
+              <Route path="/admin/orders" element={<AdminProtectedRoute><OrdersList /></AdminProtectedRoute>} />
+              <Route path="/admin/coupons" element={<AdminProtectedRoute><AdminCoupons /></AdminProtectedRoute>} />
+              <Route path="/admin/dashboard" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
               
 
               <Route path="/salesman/dashboard" element={<SalesmanProtectedRoute><SalesmanDashboard /></SalesmanProtectedRoute>} />

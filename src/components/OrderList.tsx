@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import DownloadInvoice, { hasInvoice } from '@/components/DownloadInvoice';
+import { clearAuthSession, hasAdminSession } from '@/lib/adminSession';
 
 // ============================================================
 // TYPES
@@ -393,6 +394,13 @@ const AdminOrders: React.FC = () => {
   // UPDATE STATUS
   // ============================================================
   const updateOrderStatus = async (order: UnifiedOrder, status: string) => {
+    if (!hasAdminSession()) {
+      clearAuthSession();
+      alert('Your admin session is missing or has expired. Please sign in again.');
+      navigate('/');
+      return;
+    }
+
     const orderId = order.id;
     const source = order._source;
     let paymentStatus = 'pending';
@@ -452,7 +460,13 @@ const AdminOrders: React.FC = () => {
           ? previousSelected
           : prev
       );
-      alert(`Failed to update order status: ${error.response?.data?.message || error.message}`);
+      if ([401, 403].includes(error.response?.status)) {
+        clearAuthSession();
+        alert('Your admin session is no longer authorized. Please sign in again.');
+        navigate('/');
+      } else {
+        alert(`Failed to update order status: ${error.response?.data?.message || error.message}`);
+      }
     } finally {
       setUpdatingOrderId(null);
     }

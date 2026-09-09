@@ -17,6 +17,7 @@ import {
   ShoppingCart
 } from 'lucide-react';
 import logo from '@/assets/STH PNG.png';
+import { clearAuthSession } from '@/lib/adminSession';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ const Navbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    clearAuthSession();
     navigate('/');
   };
 
