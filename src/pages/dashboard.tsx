@@ -502,13 +502,13 @@ const AdminDashboard: React.FC = () => {
               <Gift size={24} className="mx-auto text-[#0c2d67] mb-2" />
               <p className="text-sm font-medium text-gray-700">Packages</p>
             </button>
-            <button
+            {/* <button
               onClick={() => navigate('/admin/coupons')}
               className="bg-white rounded-xl shadow-lg p-4 hover:shadow-xl transition-shadow text-center hover:bg-gray-50"
             >
               <Tag size={24} className="mx-auto text-[#0c2d67] mb-2" />
               <p className="text-sm font-medium text-gray-700">Coupons</p>
-            </button>
+            </button> */}
           </div>
         </div>
 

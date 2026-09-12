@@ -1012,54 +1012,7 @@ const AdminOrders: React.FC = () => {
             {/* Event Details & Delivery Address - Side by Side */}
             <div className="p-6 border-b">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Event Details - Left Column */}
-                {(selectedOrder.event_type || selectedOrder.venue || selectedOrder.guest_count) && (
-                  <div>
-                    <h3 className="font-semibold text-gray-700 flex items-center gap-2 mb-3">
-                      <span className="text-xl">{getEventIcon(selectedOrder.event_type)}</span> Event Details
-                    </h3>
-                    <div className="bg-blue-50 rounded-lg p-4 space-y-2">
-                      {selectedOrder.event_type && (
-                        <div className="flex justify-between items-center border-b border-blue-100 pb-2">
-                          <span className="text-sm text-gray-600">Event Type</span>
-                          <span className="font-medium text-gray-800">{selectedOrder.event_type}</span>
-                        </div>
-                      )}
-                      {selectedOrder.event_date && (
-                        <div className="flex justify-between items-center border-b border-blue-100 pb-2">
-                          <span className="text-sm text-gray-600">Event Date</span>
-                          <span className="font-medium text-gray-800">{new Date(selectedOrder.event_date).toLocaleDateString()}</span>
-                        </div>
-                      )}
-                      {selectedOrder.event_time && (
-                        <div className="flex justify-between items-center border-b border-blue-100 pb-2">
-                          <span className="text-sm text-gray-600">Event Time</span>
-                          <span className="font-medium text-gray-800">{selectedOrder.event_time}</span>
-                        </div>
-                      )}
-                      {selectedOrder.venue && (
-                        <div className="flex justify-between items-center border-b border-blue-100 pb-2">
-                          <span className="text-sm text-gray-600">Venue</span>
-                          <span className="font-medium text-gray-800">{selectedOrder.venue}</span>
-                        </div>
-                      )}
-                      {selectedOrder.guest_count && (
-                        <div className="flex justify-between items-center border-b border-blue-100 pb-2">
-                          <span className="text-sm text-gray-600">Guest Count</span>
-                          <span className="font-medium text-gray-800">{selectedOrder.guest_count}</span>
-                        </div>
-                      )}
-                      {selectedOrder.special_instructions && (
-                        <div className="pt-2">
-                          <span className="text-sm text-gray-600 block mb-1">Special Instructions</span>
-                          <p className="text-sm text-gray-800 bg-yellow-50 p-2 rounded border border-yellow-200">
-                            {selectedOrder.special_instructions}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
+                
 
                 {/* Delivery Address - Right Column */}
                 {(selectedOrder.address_line1 || selectedOrder.address_city) && (
