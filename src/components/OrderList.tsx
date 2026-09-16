@@ -802,7 +802,7 @@ const AdminOrders: React.FC = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Source</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Address</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Event</th>
+                  {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Event</th> */}
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Items</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
@@ -862,7 +862,7 @@ const AdminOrders: React.FC = () => {
                           <span className="text-sm text-gray-400">No address</span>
                         )}
                       </td>
-                      <td className="px-6 py-4">
+                      {/* <td className="px-6 py-4">
                         {order.event_type && (
                           <div>
                             <div className="flex items-center gap-1">
@@ -877,7 +877,7 @@ const AdminOrders: React.FC = () => {
                             )}
                           </div>
                         )}
-                      </td>
+                      </td> */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-1">
                           <span className="text-sm font-medium">{order.items?.length || 0}</span>
@@ -916,7 +916,7 @@ const AdminOrders: React.FC = () => {
                       </td>
                       <td className="px-6 py-4">
                         {renderPaymentStatusBadge(order)}
-                        <div className="text-xs text-gray-400 mt-1 capitalize">{order.payment_method}</div>
+                        {/* <div className="text-xs text-gray-400 mt-1 capitalize">{order.payment_method}</div> */}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
                         {new Date(order.created_at || order.order_date || '').toLocaleDateString()}
@@ -1224,8 +1224,8 @@ const AdminOrders: React.FC = () => {
                     <p className="text-gray-800"><strong>Order #:</strong> {selectedOrder.order_number}</p>
                     <p className="text-gray-800"><strong>Status:</strong> {getOrderStatus(selectedOrder)}</p>
                     <p className="text-gray-800"><strong>Payment:</strong> {selectedOrder.payment_status}</p>
-                    <p className="text-gray-800"><strong>Method:</strong> {selectedOrder.payment_method}</p>
-                    {selectedOrder.event_type && (
+                    {/* <p className="text-gray-800"><strong>Method:</strong> {selectedOrder.payment_method}</p> */}
+                    {/* {selectedOrder.event_type && (
                       <p className="text-gray-800"><strong>Event:</strong> {selectedOrder.event_type}</p>
                     )}
                     {selectedOrder.event_date && (
@@ -1233,7 +1233,7 @@ const AdminOrders: React.FC = () => {
                     )}
                     {selectedOrder.venue && (
                       <p className="text-gray-800"><strong>Venue:</strong> {selectedOrder.venue}</p>
-                    )}
+                    )} */}
                   </div>
                 </div>
               </div>

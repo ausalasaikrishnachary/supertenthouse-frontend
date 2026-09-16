@@ -41,17 +41,16 @@ const SalesmanNavbar: React.FC<SalesmanNavbarProps> = ({ userName }) => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <div className="bg-white/10 p-1.5 rounded-lg shadow-lg shadow-black/20 backdrop-blur-sm">
+            <div className="bg-white/10 p-1 rounded-lg shadow-lg shadow-black/20 backdrop-blur-sm">
               <img 
                 src={logo} 
                 alt="Logo" 
-                className="h-8 w-8 object-contain drop-shadow-lg filter brightness-0 invert" 
+                className="h-10 w-10 object-contain drop-shadow-lg filter" 
               />
             </div>
             <span className="text-xl font-bold drop-shadow-lg">Salesman Panel</span>
           </div>
 
-          <SalesmanNotificationBell />
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
             {navItems.map((item) => (
@@ -64,6 +63,8 @@ const SalesmanNavbar: React.FC<SalesmanNavbarProps> = ({ userName }) => {
                 <span>{item.name}</span>
               </Link>
             ))}
+
+            <SalesmanNotificationBell />
 
             {/* Profile Dropdown */}
             <div className="relative">
@@ -98,6 +99,7 @@ const SalesmanNavbar: React.FC<SalesmanNavbarProps> = ({ userName }) => {
               )}
             </div>
           </div>
+          
 
           {/* Mobile Menu Button */}
           <button
