@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import BASE_URL from '@/Config/Api';
+import { canDownloadInvoice } from '@/components/DownloadInvoice';
 
 interface Order {
   id: number;
@@ -754,9 +755,10 @@ const AdminOrders: React.FC = () => {
               )}
 
               <div className="flex justify-end space-x-3">
-                {selectedOrder?.invoice_number && (
+                {selectedOrder && canDownloadInvoice(selectedOrder) && (
                   <button
                     onClick={() => {
+                      if (!canDownloadInvoice(selectedOrder)) return;
                       axios({
                         url: `${BASE_URL}/api/invoice/generate-pdf`,
                         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },

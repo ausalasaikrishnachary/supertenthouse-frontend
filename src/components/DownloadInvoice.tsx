@@ -4,6 +4,7 @@ import BASE_URL from '@/Config/Api';
 
 type InvoiceOrder = { invoice_number?: string | null; [key: string]: any };
 export const hasInvoice = (order: InvoiceOrder) => Boolean(order.invoice_number?.trim());
+export const canDownloadInvoice = (order: InvoiceOrder) => hasInvoice(order) && String(order.status || '').trim().toLowerCase() === 'completed';
 const number = (value: unknown) => Number.isFinite(Number(value)) ? Number(value) : 0;
 
 export function invoicePayload(order: InvoiceOrder) {
@@ -31,8 +32,9 @@ export function invoicePayload(order: InvoiceOrder) {
 export default function DownloadInvoice({ order }: { order: InvoiceOrder }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  if (!hasInvoice(order)) return null;
+  if (!canDownloadInvoice(order)) return null;
   const download = async () => {
+    if (!canDownloadInvoice(order)) return;
     setBusy(true); setError('');
     let url: string | undefined;
     try {
