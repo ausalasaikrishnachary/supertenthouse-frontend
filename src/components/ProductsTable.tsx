@@ -28,6 +28,8 @@ export interface Product {
   care_instructions: string;
   is_active: number;
   images?: string[];
+  colors?: string[] | string;
+  sizes?: ({ size: string; price?: number | null } | string)[] | string;
 }
 
 interface ProductsTableProps {
@@ -205,6 +207,15 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                     <td className="px-4 py-3">
                       <div className="font-medium text-sm text-gray-900">{product.product_name}</div>
                       <div className="text-xs text-gray-500">Code: {product.product_code || '-'}</div>
+                      {(() => {
+                        const parse = (value: any) => Array.isArray(value) ? value : (() => { try { return JSON.parse(value || '[]'); } catch { return []; } })();
+                        const sizes = parse(product.sizes);
+                        const colors = parse(product.colors);
+                        return <>
+                          {sizes.length > 0 && <div className="text-xs text-gray-500">Sizes: {sizes.map((entry: any) => typeof entry === 'string' ? entry : `${entry.size}${entry.price ? ` (₹${entry.price})` : ''}`).join(', ')}</div>}
+                          {colors.length > 0 && <div className="text-xs text-gray-500">Colours: {colors.join(', ')}</div>}
+                        </>;
+                      })()}
                     </td>
                     <td className="px-4 py-3">
                       <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">

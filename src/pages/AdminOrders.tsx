@@ -736,7 +736,11 @@ const AdminOrders: React.FC = () => {
                     <tbody className="divide-y divide-gray-200">
                       {parseItems(selectedOrder.items).map((item, index) => (
                         <tr key={index}>
-                          <td className="px-4 py-2 text-sm text-gray-900">{item.name}</td>
+                          <td className="px-4 py-2 text-sm text-gray-900">
+                            <div>{item.name || item.product_name}</div>
+                            {(item.selectedSize || item.selected_size) && <div className="text-xs text-gray-500">Size: {item.selectedSize || item.selected_size}</div>}
+                            {(item.selectedColor || item.selected_color) && <div className="text-xs text-gray-500">Colour: {item.selectedColor || item.selected_color}</div>}
+                          </td>
                           <td className="px-4 py-2 text-sm text-gray-600">{item.quantity}</td>
                           <td className="px-4 py-2 text-sm text-gray-600">₹{Number(item.price).toFixed(2)}</td>
                           <td className="px-4 py-2 text-sm text-gray-900">₹{Number(item.price * item.quantity).toFixed(2)}</td>

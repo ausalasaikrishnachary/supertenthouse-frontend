@@ -35,6 +35,8 @@ interface Product {
   category_name: string;
   color: string;
   material: string;
+  colors?: string[];
+  sizes?: ({ size: string; price: number | null } | string)[];
 }
 
 interface CartItem {
@@ -46,6 +48,8 @@ interface CartItem {
   image: string;
   product_code?: string;
   discount?: number;
+  selected_size?: string;
+  selected_color?: string;
 }
 
 interface OrderResponse {
@@ -77,6 +81,7 @@ const SalesmanCreateOrder: React.FC = () => {
   const [placedOrder, setPlacedOrder] = useState<OrderResponse | null>(null);
   const [orderDate, setOrderDate] = useState(new Date());
   const [productQuantities, setProductQuantities] = useState<{ [key: number]: number }>({});
+  const [productVariants, setProductVariants] = useState<Record<number, { size?: string; color?: string }>>({});
   const [orderNumber, setOrderNumber] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<'success' | 'error' | 'info'>('info');
@@ -194,14 +199,20 @@ const SalesmanCreateOrder: React.FC = () => {
 
   const addToCart = (product: Product) => {
     const quantity = productQuantities[product.id] || 1;
-    const existingItem = cart.find(item => item.product_id === product.id);
-    const price = parseFloat(product.price) * (1 - parseFloat(product.discount || '0') / 100);
+    const sizes = (product.sizes || []).map((entry: any) => typeof entry === 'string' ? { size: entry, price: null } : { size: String(entry?.size || entry?.name || entry?.label || ''), price: entry?.price == null ? null : Number(entry.price) }).filter(option => option.size);
+    const colors = Array.isArray(product.colors) ? product.colors : [];
+    const selected = productVariants[product.id] || {};
+    if (sizes.length && !selected.size) return showToast('Please select a size', 'error');
+    if (colors.length && !selected.color) return showToast('Please select a colour', 'error');
+    const sizePrice = sizes.find(option => option.size === selected.size)?.price;
+    const price = (sizePrice ?? parseFloat(product.price)) * (1 - parseFloat(product.discount || '0') / 100);
+    const existingItem = cart.find(item => item.product_id === product.id && item.selected_size === selected.size && item.selected_color === selected.color);
     const discount = parseFloat(product.discount || '0');
     
     if (existingItem) {
       if (existingItem.quantity + quantity <= product.available_stock) {
         setCart(cart.map(item =>
-          item.product_id === product.id
+          item.product_id === product.id && item.selected_size === selected.size && item.selected_color === selected.color
             ? { ...item, quantity: item.quantity + quantity }
             : item
         ));
@@ -218,7 +229,9 @@ const SalesmanCreateOrder: React.FC = () => {
         available_stock: product.available_stock,
         image: product.images && product.images.length > 0 ? product.images[0] : '',
         product_code: product.product_code,
-        discount: discount
+        discount: discount,
+        selected_size: selected.size,
+        selected_color: selected.color
       }]);
       showToast(`Added ${product.product_name} to cart`, 'success');
     }
@@ -295,6 +308,8 @@ const SalesmanCreateOrder: React.FC = () => {
           product_id: item.product_id,
           quantity: item.quantity,
           price: item.price
+          ,selected_size: item.selected_size
+          ,selected_color: item.selected_color
         })),
         total_amount: calculateSubtotal(),
         salesman_id: salesmanInfo.id,
@@ -811,6 +826,29 @@ const SalesmanCreateOrder: React.FC = () => {
                             </span>
                           </div>
                           
+                          {(product.sizes?.length || product.colors?.length) ? (
+                            <div className="mt-3 grid grid-cols-1 gap-2">
+                              {product.sizes?.length ? (
+                                <select aria-label={`Size for ${product.product_name}`} className="border rounded-lg px-2 py-1 text-sm"
+                                  value={productVariants[product.id]?.size || ''}
+                                  onChange={e => setProductVariants(prev => ({ ...prev, [product.id]: { ...prev[product.id], size: e.target.value || undefined } }))}>
+                                  <option value="">Select size</option>
+                                  {product.sizes.map((entry: any) => {
+                                    const option = typeof entry === 'string' ? { size: entry, price: null } : { size: entry.size || entry.name || entry.label, price: entry.price };
+                                    return <option key={option.size} value={option.size}>{option.size}{option.price ? ` — ₹${Number(option.price).toFixed(2)}` : ''}</option>;
+                                  })}
+                                </select>
+                              ) : null}
+                              {product.colors?.length ? (
+                                <select aria-label={`Colour for ${product.product_name}`} className="border rounded-lg px-2 py-1 text-sm"
+                                  value={productVariants[product.id]?.color || ''}
+                                  onChange={e => setProductVariants(prev => ({ ...prev, [product.id]: { ...prev[product.id], color: e.target.value || undefined } }))}>
+                                  <option value="">Select colour</option>
+                                  {product.colors.map(color => <option key={color} value={color}>{color}</option>)}
+                                </select>
+                              ) : null}
+                            </div>
+                          ) : null}
                           <div className="mt-3 flex items-center gap-2">
                             <div className="flex items-center border rounded-lg overflow-hidden">
                               <button
@@ -913,6 +951,8 @@ const SalesmanCreateOrder: React.FC = () => {
                               {item.product_code && (
                                 <p className="text-xs text-gray-500">{item.product_code}</p>
                               )}
+                              {item.selected_size && <p className="text-xs text-gray-500">Size: {item.selected_size}</p>}
+                              {item.selected_color && <p className="text-xs text-gray-500">Colour: {item.selected_color}</p>}
                             </div>
                           </div>
                         </td>

@@ -14,6 +14,10 @@ interface OrderItem {
   quantity: number;
   price: string | number;
   subtotal?: string | number;
+  selected_size?: string;
+  selected_color?: string;
+  selectedSize?: string;
+  selectedColor?: string;
 }
 
 interface SalesmanOrderDetailsData {
@@ -110,7 +114,7 @@ export default function SalesmanOrderDetails() {
 
         
 
-        <section className="bg-white rounded-xl border overflow-hidden mb-5"><div className="px-6 py-4 border-b"><h2 className="font-semibold text-gray-900 flex items-center gap-2"><Package size={19} /> Order items</h2></div>{order.items.length === 0 ? <p className="p-6 text-sm text-gray-500">No items available.</p> : <div className="divide-y">{order.items.map(item => <div key={item.id} className="p-5 flex items-center justify-between gap-4"><div><p className="font-medium text-gray-900">{item.product_name || item.name || 'Item'}</p><p className="text-xs text-gray-500 mt-1">{item.product_code || ''} · Quantity {item.quantity}</p></div><div className="text-right"><p className="font-semibold">{money(item.subtotal ?? Number(item.price) * item.quantity)}</p><p className="text-xs text-gray-500">{money(item.price)} each</p></div></div>)}</div>}</section>
+        <section className="bg-white rounded-xl border overflow-hidden mb-5"><div className="px-6 py-4 border-b"><h2 className="font-semibold text-gray-900 flex items-center gap-2"><Package size={19} /> Order items</h2></div>{order.items.length === 0 ? <p className="p-6 text-sm text-gray-500">No items available.</p> : <div className="divide-y">{order.items.map(item => <div key={item.id} className="p-5 flex items-center justify-between gap-4"><div><p className="font-medium text-gray-900">{item.product_name || item.name || 'Item'}</p><p className="text-xs text-gray-500 mt-1">{item.product_code || ''} · Quantity {item.quantity}</p>{(item.selected_size || item.selectedSize) && <p className="text-xs text-gray-500">Size: {item.selected_size || item.selectedSize}</p>}{(item.selected_color || item.selectedColor) && <p className="text-xs text-gray-500">Colour: {item.selected_color || item.selectedColor}</p>}</div><div className="text-right"><p className="font-semibold">{money(item.subtotal ?? Number(item.price) * item.quantity)}</p><p className="text-xs text-gray-500">{money(item.price)} each</p></div></div>)}</div>}</section>
 
         <div className="grid md:grid-cols-2 gap-5">
           <section className="bg-white rounded-xl border p-6"><h2 className="font-semibold text-gray-900 flex items-center gap-2 mb-4"><CreditCard size={19} /> Payment</h2><div className="space-y-2 text-sm"><div className="flex justify-between"><span className="text-gray-500">Method</span><span className="capitalize">{order.payment_method || 'Not specified'}</span></div><div className="flex justify-between"><span className="text-gray-500">Status</span><span className="capitalize font-medium">{order.payment_status || 'pending'}</span></div></div></section>

@@ -602,8 +602,9 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({
   });
 
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [sizes, setSizes] = useState<string[]>([]);
+  const [sizes, setSizes] = useState<{ size: string; price: number | null }[]>([]);
   const [newSize, setNewSize] = useState("");
+  const [newSizePrice, setNewSizePrice] = useState("");
   const [showColorPicker, setShowColorPicker] = useState(false);
 
   const [colorImages, setColorImages] = useState<Record<string, File[]>>({});
@@ -631,6 +632,14 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({
       }
     }
     return [];
+  };
+
+  const parseSizes = (value: any): { size: string; price: number | null }[] => {
+    const raw = Array.isArray(value) ? value : (() => { try { return JSON.parse(value || '[]'); } catch { return []; } })();
+    return Array.isArray(raw) ? raw.map((entry: any) => typeof entry === 'string'
+      ? { size: entry, price: null }
+      : { size: String(entry?.size || entry?.name || entry?.label || ''), price: entry?.price == null ? null : Number(entry.price) }
+    ).filter(entry => entry.size) : [];
   };
 
   const parseColorImages = (value: any): Record<string, string[]> => {
@@ -684,7 +693,7 @@ useEffect(() => {
     });
 
     setSelectedColors(parseJSONArray(initialData.colors));
-    setSizes(parseJSONArray(initialData.sizes));
+    setSizes(parseSizes(initialData.sizes));
 
     const colorImagesData = parseColorImages(initialData.color_images);
     setExistingColorImages(colorImagesData);
@@ -724,6 +733,7 @@ const resetForm = () => {
   });
   setSelectedColors([]);
   setSizes([]);
+  setNewSizePrice("");
   setImages([]);
   setExistingImages([]);
   setExistingColorImages({});
@@ -829,9 +839,16 @@ const resetForm = () => {
   };
 
   const addSize = () => {
-    if (newSize.trim() && !sizes.includes(newSize.trim())) {
-      setSizes([...sizes, newSize.trim()]);
+    const name = newSize.trim();
+    const sizePrice = Number(newSizePrice);
+    if (!name) return setImageError('Enter a size name.');
+    if (!Number.isFinite(sizePrice) || sizePrice <= 0) return setImageError('Size price must be a positive number.');
+    if (sizes.some(entry => entry.size.toLowerCase() === name.toLowerCase())) return setImageError('Duplicate sizes are not allowed.');
+    if (name) {
+      setImageError('');
+      setSizes([...sizes, { size: name, price: sizePrice }]);
       setNewSize("");
+      setNewSizePrice("");
     }
   };
 
@@ -1265,13 +1282,24 @@ const resetForm = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Available Sizes
               </label>
-              <div className="flex gap-2 mb-2">
+              <div className="grid grid-cols-1 sm:grid-cols-[1fr_180px_auto] gap-2 mb-2">
                 <input
                   type="text"
                   placeholder="Enter size (e.g., Large)"
                   className="flex-1 border border-gray-300 rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-[#0c2d67] focus:border-transparent"
                   value={newSize}
                   onChange={(e) => setNewSize(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSize())}
+                />
+                <input
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  placeholder="Size price"
+                  aria-label="Size price"
+                  className="border border-gray-300 rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-[#0c2d67]"
+                  value={newSizePrice}
+                  onChange={(e) => setNewSizePrice(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSize())}
                 />
                 <button
@@ -1283,12 +1311,12 @@ const resetForm = () => {
                 </button>
               </div>
               <div className="flex flex-wrap gap-2">
-                {sizes.map((size, index) => (
+                {sizes.map((entry, index) => (
                   <span
                     key={index}
                     className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
                   >
-                    {size}
+                    {entry.size}{entry.price != null ? ` — ₹${entry.price.toFixed(2)}` : ''}
                     <button
                       type="button"
                       onClick={() => removeSize(index)}
