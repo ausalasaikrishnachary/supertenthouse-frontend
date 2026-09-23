@@ -263,7 +263,7 @@ const CreateOrder: React.FC = () => {
   };
 
   const calculateGrandTotal = () => {
-    return calculateSubtotal() + calculateTax();
+    return calculateSubtotal() ;
   };
 
   const placeOrder = async () => {
@@ -289,7 +289,7 @@ const CreateOrder: React.FC = () => {
           quantity: item.quantity,
           price: item.price
         })),
-        total_amount: calculateSubtotal()
+        total_amount: calculateSubtotal(),
       };
 
       const response = await axios.post(`${BASE_URL}/api/orders`, orderData, {
@@ -466,7 +466,7 @@ const CreateOrder: React.FC = () => {
                       <p className="text-sm text-blue-600 font-bold"><strong>Invoice Number:</strong> {placedOrder.order.invoice_number}</p>
                     )}
                     <p className="text-gray-800"><strong>Status:</strong> <span className="text-green-600">Confirmed</span></p>
-                    <p className="text-gray-800"><strong>Payment:</strong> <span className="text-yellow-600">Pending</span></p>
+                    <p className="text-gray-800"><strong>Payment:</strong> <span className="text-yellow-600">Paid</span></p>
                   </div>
                 </div>
               </div>
@@ -525,12 +525,12 @@ const CreateOrder: React.FC = () => {
                       <span>Subtotal:</span>
                       <span>₹{calculateSubtotal().toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between text-gray-600 print:text-gray-700">
+                    {/* <div className="flex justify-between text-gray-600 print:text-gray-700">
                       <span>Tax (18%):</span>
                       <span>₹{calculateTax().toFixed(2)}</span>
-                    </div>
+                    </div> */}
                     <div className="flex justify-between text-xl font-bold text-[#0c2d67] pt-2 border-t-2 border-dashed print:border-t-2 print:border-gray-400 print:text-gray-900">
-                      <span>Grand Total:</span>
+                      <span>Total:</span>
                       <span>₹{calculateGrandTotal().toFixed(2)}</span>
                     </div>
                   </div>
@@ -954,12 +954,12 @@ const CreateOrder: React.FC = () => {
                       <span className="text-gray-600">Subtotal:</span>
                       <span className="font-medium">₹{calculateSubtotal().toFixed(2)}</span>
                     </div>
-                    <div className="flex gap-4">
+                    {/* <div className="flex gap-4">
                       <span className="text-gray-600">Tax (18%):</span>
                       <span className="font-medium">₹{calculateTax().toFixed(2)}</span>
-                    </div>
+                    </div> */}
                     <div className="flex gap-4 text-lg font-bold text-[#0c2d67]">
-                      <span>Grand Total:</span>
+                      <span>Total:</span>
                       <span>₹{calculateGrandTotal().toFixed(2)}</span>
                     </div>
                   </div>

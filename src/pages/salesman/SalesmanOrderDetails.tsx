@@ -106,7 +106,6 @@ export default function SalesmanOrderDetails() {
         <div className="grid md:grid-cols-2 gap-5 mb-5">
           <section className="bg-white rounded-xl border p-6"><h2 className="font-semibold text-gray-900 flex items-center gap-2 mb-4"><UserRound size={19} /> Customer</h2><div className="space-y-2 text-sm text-gray-600"><p className="font-medium text-gray-900">{order.customer_name || 'Not available'}</p><p>{order.customer_email || 'Email not available'}</p><p className="flex items-center gap-2"><Phone size={15} /> {order.customer_phone || 'Phone not available'}</p></div></section>
           <section className="bg-white rounded-xl border p-6 mb-5"><h2 className="font-semibold text-gray-900 flex items-center gap-2 mb-3"><MapPin size={19} /> Address</h2><p className="text-sm text-gray-600">{address || order.venue || 'Address not available'}</p></section>
-          {/* <section className="bg-white rounded-xl border p-6"><h2 className="font-semibold text-gray-900 flex items-center gap-2 mb-4"><CalendarDays size={19} /> Event</h2><div className="space-y-2 text-sm text-gray-600"><p><strong>Type:</strong> {order.event_type || 'Not specified'}</p><p><strong>Date:</strong> {dateTime(order.event_date)}</p><p><strong>Time:</strong> {order.event_time || 'Not specified'}</p><p><strong>Venue:</strong> {order.venue || 'Not specified'}</p>{order.guest_count != null && <p className="flex items-center gap-2"><Users size={15} /> {order.guest_count} guests</p>}</div></section> */}
         </div>
 
         
@@ -115,11 +114,8 @@ export default function SalesmanOrderDetails() {
 
         <div className="grid md:grid-cols-2 gap-5">
           <section className="bg-white rounded-xl border p-6"><h2 className="font-semibold text-gray-900 flex items-center gap-2 mb-4"><CreditCard size={19} /> Payment</h2><div className="space-y-2 text-sm"><div className="flex justify-between"><span className="text-gray-500">Method</span><span className="capitalize">{order.payment_method || 'Not specified'}</span></div><div className="flex justify-between"><span className="text-gray-500">Status</span><span className="capitalize font-medium">{order.payment_status || 'pending'}</span></div></div></section>
-          <section className="bg-white rounded-xl border p-6"><h2 className="font-semibold text-gray-900 mb-4">Price summary</h2><div className="space-y-2 text-sm"><div className="flex justify-between"><span className="text-gray-500">Subtotal</span><span>{money(order.subtotal ?? order.total_amount)}</span></div><div className="flex justify-between"><span className="text-gray-500">Tax</span><span>{money(order.tax_amount)}</span></div>{Number(order.delivery_charge || 0) > 0 && <div className="flex justify-between"><span className="text-gray-500">Delivery</span><span>{money(order.delivery_charge)}</span></div>}<div className="flex justify-between border-t pt-3 mt-3 text-base font-bold"><span>Total</span><span>{money(order.grand_total)}</span></div></div></section>
+          <section className="bg-white rounded-xl border p-6"><h2 className="font-semibold text-gray-900 mb-4">Price summary</h2><div className="space-y-2 text-sm"><div className="flex justify-between"><span className="text-gray-500">Subtotal</span><span>{money(order.subtotal ?? order.total_amount)}</span></div>{Number(order.delivery_charge || 0) > 0 && <div className="flex justify-between"><span className="text-gray-500">Delivery</span><span>{money(order.delivery_charge)}</span></div>}<div className="flex justify-between border-t pt-3 mt-3 text-base font-bold"><span>Total</span><span>{money(order.total_amount)}</span></div></div></section>
         </div>
-
-        {order.notes && <section className="bg-white rounded-xl border p-6 mt-5"><h2 className="font-semibold text-gray-900 mb-2">Notes</h2><p className="text-sm text-gray-600 whitespace-pre-wrap">{order.notes}</p></section>}
-        <p className="text-xs text-gray-400 text-right mt-4">Last updated: {dateTime(order.updated_at)}</p>
       </main>
     </div>
   );

@@ -127,7 +127,7 @@ const AdminDashboard: React.FC = () => {
 
       // ─── Calculate stats ──────────────────────────────────────────────────
       const totalOrders = orders.length;
-      const totalRevenue = orders.reduce((sum: number, order: any) => sum + (parseFloat(order.grand_total) || 0), 0);
+      const totalRevenue = orders.reduce((sum: number, order: any) => sum + (parseFloat(order.total_amount) || 0), 0);
       const pendingOrders = orders.filter((o: any) => o.status === 'pending').length;
       const completedOrders = orders.filter((o: any) => o.status === 'completed').length;
       const approvedOrders = orders.filter((o: any) => o.status === 'approved').length;
@@ -409,7 +409,7 @@ const AdminDashboard: React.FC = () => {
                       </div>
                       <div className="text-right">
                         <p className="font-semibold text-[#0c2d67]">
-                          {formatCurrency(parseFloat(order.grand_total) || 0)}
+                          {formatCurrency(parseFloat(order.subtotal) || 0)}
                         </p>
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
                           {getStatusIcon(order.status)}

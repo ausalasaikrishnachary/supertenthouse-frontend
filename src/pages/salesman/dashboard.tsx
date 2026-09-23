@@ -104,7 +104,7 @@ const SalesmanDashboard: React.FC = () => {
 
       // Calculate stats
       const totalOrders = orders.length;
-      const totalRevenue = orders.reduce((sum, order) => sum + (parseFloat(String(order.grand_total)) || 0), 0);
+      const totalRevenue = orders.reduce((sum, order) => sum + (parseFloat(String(order.total_amount)) || 0), 0);
       const pendingOrders = orders.filter(order => order.status === 'pending').length;
       const completedOrders = orders.filter(order => order.status === 'completed' || order.status === 'approved').length;
 
@@ -311,7 +311,7 @@ const SalesmanDashboard: React.FC = () => {
                     </div>
                     <div className="text-right">
                       <p className="font-semibold text-[#0c2d67]">
-                        {formatCurrency(parseFloat(String(order.grand_total)) || 0)}
+                        {formatCurrency(parseFloat(String(order.total_amount)) || 0)}
                       </p>
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
                         {order.status?.charAt(0).toUpperCase() + order.status?.slice(1) || 'Pending'}

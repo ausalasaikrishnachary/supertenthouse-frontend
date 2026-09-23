@@ -132,11 +132,31 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                                 type="tel"
                                 name="phone"
                                 value={formData.phone}
-                                onChange={handleChange}
+                                onChange={(e) => {
+                                    // ✅ Strip non-digits and cap at 10
+                                    const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                    handleChange({
+                                        target: { name: 'phone', value: digits }
+                                    } as any);
+                                }}
+                                onKeyDown={(e) => {
+                                    // ✅ Block non-numeric keys (allow control keys, backspace, arrows, etc.)
+                                    const allowed = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End'];
+                                    if (allowed.includes(e.key)) return;
+                                    if (!/^\d$/.test(e.key)) e.preventDefault();
+                                }}
                                 placeholder="Enter phone number"
+                                inputMode="numeric"
+                                pattern="[0-9]{10}"
+                                maxLength={10}
                                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0c2d67]"
                                 required
                             />
+                            {formData.phone.length > 0 && formData.phone.length < 10 && (
+                                <p className="text-xs text-red-500 mt-1">
+                                    Phone number must be 10 digits
+                                </p>
+                            )}
                         </div>
 
                         <div>

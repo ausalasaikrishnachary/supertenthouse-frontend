@@ -899,11 +899,11 @@ const AdminOrders: React.FC = () => {
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm font-semibold text-[#0c2d67]">
-                          ₹{formatPrice(order.grand_total || 0).toFixed(2)}
+                          ₹{formatPrice(order.subtotal || order.total_amount || 0).toFixed(2)}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        {/* <div className="text-xs text-gray-500">
                           Items: ₹{formatPrice(order.subtotal || order.total_amount || 0).toFixed(2)}
-                        </div>
+                        </div> */}
                         {order.coupon_code && (
                           <div className="text-xs text-green-600">🎫 {order.coupon_code}</div>
                         )}
@@ -1148,8 +1148,8 @@ const AdminOrders: React.FC = () => {
                     </div>
                   )}
                   <div className="flex justify-between gap-8 text-xl font-bold text-[#0c2d67] pt-2 border-t">
-                    <span>Grand Total:</span>
-                    <span>₹{formatPrice(selectedOrder.grand_total || 0).toFixed(2)}</span>
+                    <span>Total:</span>
+                    <span>₹{formatPrice(selectedOrder.subtotal || selectedOrder.total_amount || 0).toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -1340,8 +1340,8 @@ const AdminOrders: React.FC = () => {
                       </div>
                     )}
                     <div className="flex justify-between text-xl font-bold text-[#0c2d67] pt-2 border-t-2 border-dashed">
-                      <span>Grand Total:</span>
-                      <span>₹{formatPrice(selectedOrder.grand_total || 0).toFixed(2)}</span>
+                      <span>Total:</span>
+                      <span>₹{formatPrice(selectedOrder.subtotal || selectedOrder.total_amount || 0).toFixed(2)}</span>
                     </div>
                   </div>
                 </div>

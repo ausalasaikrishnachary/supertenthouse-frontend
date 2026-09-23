@@ -158,7 +158,7 @@ export default function SalesmanOrderList() {
                   <div className="flex items-center gap-2 text-gray-600"><CalendarDays size={16} /> {formatDate(order.event_date || order.created_at || order.order_date)}</div>
                   <div className="text-gray-600">{order.items.length} item{order.items.length === 1 ? '' : 's'}</div>
                   <div className="flex items-center justify-between sm:justify-end gap-4">
-                    <strong className="text-gray-900">₹{Number(order.grand_total || 0).toLocaleString('en-IN')}</strong>
+                    <strong className="text-gray-900">₹{Number(order.total_amount || 0).toLocaleString('en-IN')}</strong>
                     <ChevronRight size={19} className="text-gray-400" />
                   </div>
                 </div>

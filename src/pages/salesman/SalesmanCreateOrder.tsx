@@ -252,12 +252,9 @@ const SalesmanCreateOrder: React.FC = () => {
     return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   };
 
-  const calculateTax = () => {
-    return calculateSubtotal() * 0.18;
-  };
-
+  // ✅ Tax removed — Grand Total = Subtotal
   const calculateGrandTotal = () => {
-    return calculateSubtotal() + calculateTax();
+    return calculateSubtotal();
   };
 
   // Get address display text
@@ -521,14 +518,12 @@ const SalesmanCreateOrder: React.FC = () => {
               <div className="mt-6 border-t pt-6 print:border-t-2 print:border-gray-400">
                 <div className="flex justify-end">
                   <div className="w-full md:w-72 space-y-2">
+                    {/* ✅ Subtotal row */}
                     <div className="flex justify-between text-gray-600 print:text-gray-700">
                       <span>Subtotal:</span>
                       <span>₹{calculateSubtotal().toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between text-gray-600 print:text-gray-700">
-                      <span>Tax (18%):</span>
-                      <span>₹{calculateTax().toFixed(2)}</span>
-                    </div>
+                    {/* ❌ Tax (18%) row removed */}
                     <div className="flex justify-between text-xl font-bold text-[#0c2d67] pt-2 border-t-2 border-dashed print:border-t-2 print:border-gray-400 print:text-gray-900">
                       <span>Grand Total:</span>
                       <span>₹{calculateGrandTotal().toFixed(2)}</span>
@@ -641,7 +636,7 @@ const SalesmanCreateOrder: React.FC = () => {
                 </p>
               </div>
               
-              {/* ─── ADDRESS SECTION - NOW DISPLAYED ────────────────────────── */}
+              {/* ─── ADDRESS SECTION ────────────────────────── */}
               <div className="mt-3 pt-3 border-t border-blue-200">
                 <p className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-2">
                   <MapPin size={16} className="text-blue-600" />
@@ -963,10 +958,7 @@ const SalesmanCreateOrder: React.FC = () => {
                       <span className="text-gray-600">Subtotal:</span>
                       <span className="font-medium">₹{calculateSubtotal().toFixed(2)}</span>
                     </div>
-                    <div className="flex gap-4">
-                      <span className="text-gray-600">Tax (18%):</span>
-                      <span className="font-medium">₹{calculateTax().toFixed(2)}</span>
-                    </div>
+                    {/* ❌ Tax (18%) row removed */}
                     <div className="flex gap-4 text-lg font-bold text-[#0c2d67]">
                       <span>Grand Total:</span>
                       <span>₹{calculateGrandTotal().toFixed(2)}</span>
